@@ -19,8 +19,10 @@ function keyPress(): void {
 export function main() {
     
     let produtos: ProdutoController = new ProdutoController();
+
     const produtoFisico = new ProdutoFisico(produtos.gerarId(), "Notebook Gamer", 8500.00, 1, 3.5);
     produtos.cadastrar(produtoFisico);
+
     const produtoDigital = new ProdutoFisico(produtos.gerarId(), "Ebook 'Aprenda POO'", 59.90, 2, 0); 
     produtos.cadastrar(produtoDigital);
 
@@ -48,7 +50,8 @@ export function main() {
         console.log("            5 - Deletar Produto                      ");
         console.log("            6 - Comprar Produto (Simulação)          ");
         console.log("            7 - Aplicar Desconto (Simulação)         ");
-        console.log("            8 - Sair                                 ");
+        console.log("            8 - ver log de AUDITORIA                 ");
+        console.log("            9 - Sair                                 ");
         console.log("                                                     ");
         console.log("*****************************************************");
         console.log("                                                     ", 
@@ -57,7 +60,7 @@ export function main() {
         console.log("Entre com a opção desejada: ");
         opcao = readlinesync.questionInt("");
 
-        if (opcao == 8) {
+        if (opcao == 9) {
             console.log(colors.fg.greenstrong, 
                 "\n @devisaias Store - Volte sempre!");
             sobre();
@@ -118,44 +121,44 @@ export function main() {
 
             case 4:
                 console.log(colors.fg.whitestrong, 
-                "\n\nAtualizar Dados do Produto\n\n", colors.reset);
-            
-            console.log("Digite o ID do Produto para Atualizar: ");
-            id = readlinesync.questionInt("");
-            
-            try {
-                let produto = produtos.buscarNoArray(id);
-
-                console.log("Digite o Nome do Produto (" + produto.nome + "): ");
-                nome = readlinesync.question("") || produto.nome; 
-
-                console.log("Digite o Preço do Produto (R$ " + produto.preco.toFixed(2) + "): ");
-                let novoPrecoInput = readlinesync.questionFloat("");
-                preco = novoPrecoInput || produto.preco;
+                    "\n\nAtualizar Dados do Produto\n\n", colors.reset);
                 
-                tipo = produto.tipo;
+                console.log("Digite o ID do Produto para Atualizar: ");
+                id = readlinesync.questionInt("");
+                
+                try {
+                    let produto = produtos.buscarNoArray(id);
 
-                if (tipo == 1) { 
-                    let produtoFisicoUpdate = produto as ProdutoFisico;
+                    console.log("Digite o Nome do Produto (" + produto.nome + "): ");
+                    nome = readlinesync.question("") || produto.nome; 
+
+                    console.log("Digite o Preço do Produto (R$ " + produto.preco.toFixed(2) + "): ");
+                    let novoPrecoInput = readlinesync.questionFloat("");
+                    preco = novoPrecoInput || produto.preco;
                     
-                    console.log("Digite o Peso (Kg " + produtoFisicoUpdate.pesoKg.toFixed(2) + "): ");
-                    let novoPesoInput = readlinesync.questionFloat("");
-                    pesoKg = novoPesoInput || produtoFisicoUpdate.pesoKg;
+                    tipo = produto.tipo;
 
-                    produtos.atualizar(
-                        new ProdutoFisico(id, nome, preco, tipo, pesoKg)
-                    );
-                } else { 
-                    produtos.atualizar(
-                        new ProdutoFisico(id, nome, preco, tipo, 0)
-                    );
+                    if (tipo == 1) { 
+                        let produtoFisicoUpdate = produto as ProdutoFisico;
+                        
+                        console.log("Digite o Peso (Kg " + produtoFisicoUpdate.pesoKg.toFixed(2) + "): ");
+                        let novoPesoInput = readlinesync.questionFloat("");
+                        pesoKg = novoPesoInput || produtoFisicoUpdate.pesoKg;
+
+                        produtos.atualizar(
+                            new ProdutoFisico(id, nome, preco, tipo, pesoKg)
+                        );
+                    } else { 
+                        produtos.atualizar(
+                            new ProdutoFisico(id, nome, preco, tipo, 0)
+                        );
+                    }
+                } catch (error: any) {
+                    console.log(colors.fg.redstrong, "\nErro: " + error.message, colors.reset);
                 }
-            } catch (error: any) {
-                console.log(colors.fg.redstrong, "\nErro: " + error.message, colors.reset);
-            }
 
-            keyPress()
-            break;
+                keyPress()
+                break;
 
             case 5:
                 console.log(colors.fg.whitestrong, 
@@ -195,6 +198,15 @@ export function main() {
                 percentual = readlinesync.questionInt("");
 
                 produtos.aplicarDesconto(id, percentual);
+
+                keyPress()
+                break;
+            
+            case 8:
+                console.log(colors.fg.whitestrong, 
+                    "\n\nLog de Auditoria de Exceções\n\n", colors.reset);
+                
+                produtos.listarAuditoria();
 
                 keyPress()
                 break;

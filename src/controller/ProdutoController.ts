@@ -5,10 +5,27 @@ import { ProdutoFisico } from "../model/ProdutoFisico";
 import { ProdutoNaoEncontradoError } from "../exceptions/ProdutoNaoEncontradoError";
 import { QuantidadeInvalidaError } from "../exceptions/QuantidadeInvalidaError";
 
+type AuditoriaLog = {
+    data: Date;
+    tipoErro: string;
+    mensagem: string;
+    idProduto: number;
+};
+
 export class ProdutoController implements ProdutoRepository {
 
     private listaProdutos: Array<ProdutoBase> = new Array<ProdutoBase>();
+    private listaAuditoria: Array<AuditoriaLog> = new Array<AuditoriaLog>();
     private id: number = 0;
+
+    private registrarAuditoria(error: any, idProduto: number): void {
+        this.listaAuditoria.push({
+            data: new Date(),
+            tipoErro: error.name || "Error",
+            mensagem: error.message,
+            idProduto: idProduto
+        });
+    }
 
     public buscarNoArray(id: number): ProdutoBase {
         for(let produto of this.listaProdutos) {
@@ -35,6 +52,7 @@ export class ProdutoController implements ProdutoRepository {
             let buscaProduto = this.buscarNoArray(id);
             buscaProduto.visualizar();
         } catch (error: any) {
+             this.registrarAuditoria(error, id);
              console.log(colors.fg.redstrong, "\nErro na busca: " + error.message, colors.reset);
         }
     }
@@ -50,6 +68,7 @@ export class ProdutoController implements ProdutoRepository {
             this.listaProdutos[this.listaProdutos.indexOf(buscaProduto)] = produto;
             console.log(colors.fg.green, "\nO Produto ID: " + produto.id + " foi atualizado com sucesso!", colors.reset);
         } catch (error: any) {
+             this.registrarAuditoria(error, produto.id); 
              console.log(colors.fg.redstrong, "\nErro na atualização: " + error.message, colors.reset);
         }
     }
@@ -60,6 +79,7 @@ export class ProdutoController implements ProdutoRepository {
             this.listaProdutos.splice(this.listaProdutos.indexOf(buscaProduto), 1);
             console.log(colors.fg.green, "\nO Produto ID: " + id + " foi excluído com sucesso!", colors.reset);
         } catch (error: any) {
+             this.registrarAuditoria(error, id);
              console.log(colors.fg.redstrong, "\nErro ao deletar: " + error.message, colors.reset);
         }
     }
@@ -77,7 +97,8 @@ export class ProdutoController implements ProdutoRepository {
             console.log(colors.fg.yellowstrong, "Valor total: R$ " + total.toFixed(2), colors.reset);
 
         } catch (error: any) {
-            console.log(colors.fg.redstrong, "\nErro na compra: " + error.message, colors.reset);
+             this.registrarAuditoria(error, id);
+             console.log(colors.fg.redstrong, "\nErro na compra: " + error.message, colors.reset);
         }
     }
 
@@ -85,19 +106,37 @@ export class ProdutoController implements ProdutoRepository {
         try {
             let produto = this.buscarNoArray(id);
 
-            let novoPreco = produto.preco * (1 - percentual / 100);
-            
             if (percentual > 50) {
-                 console.log(colors.fg.redstrong, "\nDesconto muito alto! Limite máximo de 50%.", colors.reset);
-                 return;
+                 throw new Error("DescontoAplicadoAltoError: Desconto de " + percentual + "% ultrapassa o limite de 50%.");
             }
 
+            let novoPreco = produto.preco * (1 - percentual / 100);
             produto.preco = novoPreco;
             this.atualizar(produto); 
             console.log(colors.fg.cyan, "\nNovo preço com desconto de " + percentual + "%: R$ " + produto.preco.toFixed(2), colors.reset);
 
         } catch (error: any) {
-            console.log(colors.fg.redstrong, "\nErro ao aplicar desconto: " + error.message, colors.reset);
+             this.registrarAuditoria(error, id);
+             console.log(colors.fg.redstrong, "\nErro ao aplicar desconto: " + error.message, colors.reset);
+        }
+    }
+
+    public listarAuditoria(): void {
+        if(this.listaAuditoria.length === 0){
+            console.log(colors.fg.greenstrong, "\nNenhuma operação suspeita registrada.", colors.reset);
+            return;
+        }
+
+        console.log("\n\n*****************************************************");
+        console.log("LOG DE AUDITORIA (Exceções Registradas)");
+        console.log("*****************************************************");
+        
+        for (let log of this.listaAuditoria) {
+            console.log("Data: " + log.data.toLocaleTimeString());
+            console.log("Tipo: " + log.tipoErro);
+            console.log("Produto ID: " + log.idProduto);
+            console.log("Mensagem: " + log.mensagem);
+            console.log("-----------------------------------------------------");
         }
     }
 
