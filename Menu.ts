@@ -118,48 +118,44 @@ export function main() {
 
             case 4:
                 console.log(colors.fg.whitestrong, 
-                    "\n\nAtualizar Dados do Produto\n\n", colors.reset);
-                
-                console.log("Digite o ID do Produto para Atualizar: ");
-                id = readlinesync.questionInt("");
-                
+                "\n\nAtualizar Dados do Produto\n\n", colors.reset);
+            
+            console.log("Digite o ID do Produto para Atualizar: ");
+            id = readlinesync.questionInt("");
+            
+            try {
                 let produto = produtos.buscarNoArray(id);
 
-                if (produto != null) {
+                console.log("Digite o Nome do Produto (" + produto.nome + "): ");
+                nome = readlinesync.question("") || produto.nome; 
+
+                console.log("Digite o Preço do Produto (R$ " + produto.preco.toFixed(2) + "): ");
+                let novoPrecoInput = readlinesync.questionFloat("");
+                preco = novoPrecoInput || produto.preco;
+                
+                tipo = produto.tipo;
+
+                if (tipo == 1) { 
+                    let produtoFisicoUpdate = produto as ProdutoFisico;
                     
-                    console.log("Digite o Nome do Produto (" + produto.nome + "): ");
-                    nome = readlinesync.question("") || produto.nome; 
+                    console.log("Digite o Peso (Kg " + produtoFisicoUpdate.pesoKg.toFixed(2) + "): ");
+                    let novoPesoInput = readlinesync.questionFloat("");
+                    pesoKg = novoPesoInput || produtoFisicoUpdate.pesoKg;
 
-                    console.log("Digite o Preço do Produto (R$ " + produto.preco.toFixed(2) + "): ");
-                    let novoPrecoInput = readlinesync.questionFloat("");
-                    preco = novoPrecoInput || produto.preco;
-                    
-                    tipo = produto.tipo;
-
-                    if (tipo == 1) { 
-                        let produtoFisicoUpdate = produto as ProdutoFisico;
-                        
-                        console.log("Digite o Peso (Kg " + produtoFisicoUpdate.pesoKg.toFixed(2) + "): ");
-                        let novoPesoInput = readlinesync.questionFloat("");
-                        pesoKg = novoPesoInput || produtoFisicoUpdate.pesoKg;
-
-                        produtos.atualizar(
-                            new ProdutoFisico(id, nome, preco, tipo, pesoKg)
-                        );
-                    } else { 
-                        produtos.atualizar(
-                            new ProdutoFisico(id, nome, preco, tipo, 0)
-                        );
-                    }
-
-
-                } else {
-                    console.log(colors.fg.redstrong, 
-                            "\nProduto ID: " + id + " não encontrado!", colors.reset);
+                    produtos.atualizar(
+                        new ProdutoFisico(id, nome, preco, tipo, pesoKg)
+                    );
+                } else { 
+                    produtos.atualizar(
+                        new ProdutoFisico(id, nome, preco, tipo, 0)
+                    );
                 }
+            } catch (error: any) {
+                console.log(colors.fg.redstrong, "\nErro: " + error.message, colors.reset);
+            }
 
-                keyPress()
-                break;
+            keyPress()
+            break;
 
             case 5:
                 console.log(colors.fg.whitestrong, 
